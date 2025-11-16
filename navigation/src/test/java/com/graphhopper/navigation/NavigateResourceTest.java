@@ -323,3 +323,4 @@ public class NavigateResourceTest {
         assertTrue(captor.getValue().getPathDetails().contains("time"));
     }
 }
+

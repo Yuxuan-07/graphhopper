@@ -1,0 +1,15 @@
+name: "Rickroll on failure"
+description: "Affiche un message drôle et un lien Rickroll dans les logs et le résumé"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        echo "Les tests ont échoué ou le score de mutation a baissé... abandonnez le navire, la CI coule"
+        echo "https://www.youtube.com/watch?v=F2RnxZnubCM"
+
+        {
+          echo "Les tests ont échoué ou le score de mutation a baissé... abandonnez le navire, la CI coule"
+          echo ""
+          echo "[Clique ici](https://www.youtube.com/watch?v=F2RnxZnubCM)"
+        } >> "$GITHUB_STEP_SUMMARY"

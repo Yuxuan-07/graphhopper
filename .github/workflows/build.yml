@@ -34,6 +34,61 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/pom.xml', '**/package.json') }}
           restore-keys: |
             ${{ runner.os}}-node_modules-
-      - name: Build ${{ matrix.java-version }}
-        run: mvn -B clean test
+      
+      - name: Build ${{ matrix.java-version }} & Run with original tests
+        run: | 
+          mvn -B -pl core -am test-compile \
+            org.pitest:pitest-maven:1.20.4:mutationCoverage \
+            -DtargetClasses='com.graphhopper.routing.util.SnapPreventionEdgeFilter' \
+            -DtargetTests='com.graphhopper.routing.util.SnapPreventionEdgeFilterTest' \
+            -DfailWhenNoMutations=false
+
+      - name: Extraire le score de mutation
+        run: | 
+          mutationScore=$(grep -Po '"coverage_percentage">\K[0-9]+' \
+          core/target/pit-reports/index.html | sed -n '2p')
+          echo "MUTATION_SCORE=$mutationScore" >> $GITHUB_ENV
+      
+      - name: Restaurer/Enregistrer le score de mutation de référence
+        uses: actions/cache@v4
+        with:
+          path: mutation-score-baseline.txt
+          key: mutation-score-baseline-${{ matrix.java-version }}
+
+    
+      - name: Comparer le score de mutation avec la valeur de référence
+        run: |
+          echo "Score de mutation : $MUTATION_SCORE"
+          if [ -f mutation-score-baseline.txt ]; then
+            baseline=$(cat mutation-score-baseline.txt)
+            echo "Score de mutation de référence : $baseline"
+            if [ "$baseline" -gt "$MUTATION_SCORE" ]; then
+              echo "Erreur: le score de mutation réduit de $baseline à $MUTATION_SCORE."
+              exit 1
+            fi
+            if [ "$baseline" -lt "$MUTATION_SCORE" ]; then
+              echo "Le score de mutation augmente de $baseline à $MUTATION_SCORE."
+            else
+              echo "Le score de mutation est égal au score de référence."
+            fi
+          else
+            echo "Il n'existe aucune valeur de référence."
+          fi
+
+      - name: Mettre à jour le score de mutation de référence
+        run: |
+          echo "$MUTATION_SCORE" > mutation-score-baseline.txt
+          echo "Le nouveau score de mutation de référence : $MUTATION_SCORE"
+      
+
+  rickroll:
+    needs: build
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rickroll on failure
+        uses: ./.github/actions/rickroll
+
+
 

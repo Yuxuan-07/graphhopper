@@ -40,7 +40,7 @@ jobs:
           mvn -B -pl core -am test-compile \
             org.pitest:pitest-maven:1.20.4:mutationCoverage \
             -DtargetClasses='com.graphhopper.routing.util.SnapPreventionEdgeFilter' \
-            -DtargetTests='com.graphhopper.routing.util.SnapPreventionEdgeFilterOriginalTest' \
+            -DtargetTests='com.graphhopper.routing.util.SnapPreventionEdgeFilterTest' \
             -DfailWhenNoMutations=false
 
       - name: Extraire le score de mutation

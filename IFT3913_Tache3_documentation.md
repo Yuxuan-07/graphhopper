@@ -14,23 +14,23 @@ Les tests suivants portent sur la classe `SnapPreventionEdgeFilter` située dans
 
 L'objectif du workflow est de vérifier si le score de mutation baisse après un commit, afin de s'assurer que les changements n'abaissent pas la qualité des tests. Ainsi, nous devons : 
 
-1. Conserver la valeur de référence afin de la comparer avec le score de mutation courant
+1. Conserver une valeur de référence afin de la comparer avec le score de mutation courant
 2. Lancer une erreur lorsque le score de mutation est inférieur à la valuer de référence
 3. Mettre à jour la baseline lorsque le score de mutation courant est supérieur à la référence 
 
 ### Implémentation pour cette modification :
 
-Afin de permettre la lecture et la mise à jour de la de référence entre différentes exécutions du CI, nous utilisons [action/cache](https://github.com/actions/cache), qui permet de stocker et de restaurer des fichiers générés lors d'un workflow.
+Afin de permettre la lecture et la mise à jour de la valeur de référence entre différentes exécutions du CI, nous utilisons [action/cache](https://github.com/actions/cache), qui permet de stocker et de restaurer des fichiers générés lors d'un workflow.
 
 1. `Build ${{ matrix.java-version }} & Run the tests` : 
-   - Compile le projet et exécute les tests SnapPreventionEdgeFilterTest` avec PITest
+   - Compile le projet et exécute les tests `SnapPreventionEdgeFilterTest` avec PITest
 2. `Extraire le score de mutation` : 
    - Extrait le score de mutation depuis le rapport PITest `core/target/pit-reports/index.html`
-   - Stocke cette valeur dans la variable d'environnement `MUTATION_SCORE` dans `GITHUB_ENV`  afin de la comparer avec une autre valeur dans l'étape suivante du workflow qui décide si le score de mutation baisse
+   - Stocke cette valeur dans la variable d'environnement `MUTATION_SCORE` dans `GITHUB_ENV`  afin de la comparer avec la valeur de référence dans l'étape suivante du workflow
 3. `Restaurer/Enregistrer le score de mutation de référence` : 
-   - Restaure le score de référence de `mutation-score-baseline.txt` ou le enregistre
-   - Pour éviter le conflit entre l'exécution des deux version de Java (24 et 25-ea), on introduit `${{ matrix.java-version }}` dans la clé du cache.
-   - Comme la suavegarde se fait automatiquement dans "post job", un seul étape est suffit pour restaurer et enregistrer la valeur de référence.
+   - Restaure le score de référence depuis `mutation-score-baseline.txt` ou le enregistre
+   - Pour éviter les conflits entre l'exécution des deux version de Java (24 et 25-ea), on introduit `${{ matrix.java-version }}` dans la clé du cache.
+   - Comme la suavegarde se fait automatiquement dans la phase "post job", une seule étape suffit pour restaurer et enregistrer la valeur de référence.
 4. `Comparer le score de mutation avec la valeur de référence` : 
    - Charge le valeur de référence dans la variable `$baseline`, puis la compare avec `$MUTATION_SCORE` : 
      - Si `MUTATION_SCORE ≥ baseline` : le workflow passe et on met à jour le score de référence dans l'étape suivante.
@@ -40,7 +40,7 @@ Afin de permettre la lecture et la mise à jour de la de référence entre diff�
 
 ### Manière de Validation :
 
-1. Première exécution : créer le score de mutation de référence
+1. Première exécution : Création du score de mutation de référence
 
    On exécute le workflow avec `SnapPreventionEdgeFilterTest` qui inclut les tests originaux et les tests ajoutés. Sur la page de Github Actions, on obtient :
 
@@ -50,9 +50,9 @@ Afin de permettre la lecture et la mise à jour de la de référence entre diff�
    Le nouveau score de mutation de référence : 85
    ```
 
-2. Deuxième exécution : Similation d'une régression
+2. Deuxième exécution : Simulation d'une régression
 
-   Pour vérifier le détection de la baisse du score de mutation, on a créé un fichier `SnapPreventionEdgeFilterOriginalTest.java` contenant seulement les tests originaux de la classe `SnapPreventionEdgeFilter`. On modifie temporairement le `-DtargetTests` de `SnapPreventionEdgeFilterTest`  à `SnapPreventionEdgeOriginalFilterTest`.  
+   Pour vérifier le détection de la baisse du score de mutation, on a créé un fichier `SnapPreventionEdgeFilterOriginalTest.java` contenant uniquement les tests originaux de la classe `SnapPreventionEdgeFilter`. On modifie temporairement le `-DtargetTests` de `SnapPreventionEdgeFilterTest`  à `SnapPreventionEdgeOriginalFilterTest`.  
 
    ```yaml
    - name: Build ${{ matrix.java-version }} & Run with original tests
@@ -69,7 +69,7 @@ Afin de permettre la lecture et la mise à jour de la de référence entre diff�
    ```
    Score de mutation : 60
    Score de mutation de référence : 85
-   Erreur: Le score de mutation réduit de 85 à 60.
+   Error: Le score de mutation réduit de 85 à 60.
    Error: Process completed with exit code 1.
    ```
 

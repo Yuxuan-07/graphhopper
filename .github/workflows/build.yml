@@ -40,7 +40,7 @@ jobs:
           mvn -B -pl core -am test-compile \
             org.pitest:pitest-maven:1.20.4:mutationCoverage \
             -DtargetClasses='com.graphhopper.routing.util.SnapPreventionEdgeFilter' \
-            -DtargetTests='com.graphhopper.routing.util.SnapPreventionEdgeFilterTest' \
+            -DtargetTests='com.graphhopper.routing.util.SnapPreventionEdgeFilterOriginalTest' \
             -DfailWhenNoMutations=false
 
       - name: Extraire le score de mutation
@@ -63,13 +63,13 @@ jobs:
             baseline=$(cat mutation-score-baseline.txt)
             echo "Score de mutation de référence : $baseline"
             if [ "$baseline" -gt "$MUTATION_SCORE" ]; then
-              echo "Erreur: le score de mutation réduit de $baseline à $MUTATION_SCORE."
+              echo "::error::Le score de mutation réduit de $baseline à $MUTATION_SCORE."
               exit 1
             fi
             if [ "$baseline" -lt "$MUTATION_SCORE" ]; then
-              echo "Le score de mutation augmente de $baseline à $MUTATION_SCORE."
+              echo "::notice::Le score de mutation augmente de $baseline à $MUTATION_SCORE."
             else
-              echo "Le score de mutation est égal au score de référence."
+              echo "::notice::Le score de mutation est égal au score de référence."
             fi
           else
             echo "Il n'existe aucune valeur de référence."
@@ -78,7 +78,7 @@ jobs:
       - name: Mettre à jour le score de mutation de référence
         run: |
           echo "$MUTATION_SCORE" > mutation-score-baseline.txt
-          echo "Le nouveau score de mutation de référence : $MUTATION_SCORE"
+          echo "::notice::Le nouveau score de mutation de référence : $MUTATION_SCORE"
       
 
   rickroll:

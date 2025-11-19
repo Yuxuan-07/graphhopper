@@ -40,6 +40,39 @@ Afin de permettre la lecture et la mise à jour de la de référence entre diff�
 
 ### Manière de Validation :
 
+1. Première exécution : créer le score de mutation de référence
+
+   On exécute le workflow avec `SnapPreventionEdgeFilterTest` qui inclut les tests originaux et les tests ajoutés. Sur la page de Github Actions, on obtient :
+
+   ```
+   Score de mutation : 85
+   Il n'existe aucune valeur de référence.
+   Le nouveau score de mutation de référence : 85
+   ```
+
+2. Deuxième exécution : Similation d'une régression
+
+   Pour vérifier le détection de la baisse du score de mutation, on a créé un fichier `SnapPreventionEdgeFilterOriginalTest.java` contenant seulement les tests originaux de la classe `SnapPreventionEdgeFilter`. On modifie temporairement le `-DtargetTests` de `SnapPreventionEdgeFilterTest`  à `SnapPreventionEdgeOriginalFilterTest`.  
+
+   ```yaml
+   - name: Build ${{ matrix.java-version }} & Run with original tests
+     run: | 
+       mvn -B -pl core -am test-compile \
+         org.pitest:pitest-maven:1.20.4:mutationCoverage \
+         -DtargetClasses='com.graphhopper.routing.util.SnapPreventionEdgeFilter' \
+         -DtargetTests='com.graphhopper.routing.util.SnapPreventionEdgeOriginalFilterTest' \
+         -DfailWhenNoMutations=false
+   ```
+
+   Comme les tests ajoutés ne sont pas exécutés, le score de mutation baisse. Sur la page de Github Actions, on obtient :
+
+   ```
+   Score de mutation : 60
+   Score de mutation de référence : 85
+   Erreur: Le score de mutation réduit de 85 à 60.
+   Error: Process completed with exit code 1.
+   ```
+
 ## 2 Tests ajoutés
 
 ### Test `constructorFailsForUnknownSnapPreventionValue`

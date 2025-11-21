@@ -32,7 +32,7 @@ Afin de permettre la lecture et la mise à jour de la valeur de référence entr
    - Pour éviter les conflits entre l'exécution des deux versions de Java (24 et 25-ea), on introduit `${{ matrix.java-version }}` dans la clé du cache.
    - Comme la sauvegarde se fait automatiquement dans la phase "post job", une seule étape suffit pour restaurer et enregistrer la valeur de référence.
 4. `Comparer le score de mutation avec la valeur de référence` : 
-   - Charge lea valeur de référence dans la variable `$baseline`, puis la compare avec `$MUTATION_SCORE` : 
+   - Charge la valeur de référence dans la variable `$baseline`, puis la compare avec `$MUTATION_SCORE` : 
      - Si `MUTATION_SCORE ≥ baseline` : le workflow passe et on met à jour le score de référence dans l'étape suivante.
      - Si `MUTATION_SCORE < baseline`: le workflow échoue avec `exit 1`
 5. `Mettre à jour le score de mutation de référence` : 

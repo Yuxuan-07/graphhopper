@@ -15,7 +15,7 @@ Les tests suivants portent sur la classe `SnapPreventionEdgeFilter` située dans
 L'objectif du workflow est de vérifier si le score de mutation baisse après un commit, afin de s'assurer que les changements n'abaissent pas la qualité des tests. Ainsi, nous devons : 
 
 1. Conserver une valeur de référence afin de la comparer avec le score de mutation courant
-2. Lancer une erreur lorsque le score de mutation est inférieur à la valuer de référence
+2. Lancer une erreur lorsque le score de mutation est inférieur à la valeur de référence
 3. Mettre à jour la baseline lorsque le score de mutation courant est supérieur à la référence 
 
 ### Implémentation pour cette modification :
@@ -28,11 +28,11 @@ Afin de permettre la lecture et la mise à jour de la valeur de référence entr
    - Extrait le score de mutation depuis le rapport PITest `core/target/pit-reports/index.html`
    - Stocke cette valeur dans la variable d'environnement `MUTATION_SCORE` dans `GITHUB_ENV`  afin de la comparer avec la valeur de référence dans l'étape suivante du workflow
 3. `Restaurer/Enregistrer le score de mutation de référence` : 
-   - Restaure le score de référence depuis `mutation-score-baseline.txt` ou le enregistre
-   - Pour éviter les conflits entre l'exécution des deux version de Java (24 et 25-ea), on introduit `${{ matrix.java-version }}` dans la clé du cache.
-   - Comme la suavegarde se fait automatiquement dans la phase "post job", une seule étape suffit pour restaurer et enregistrer la valeur de référence.
+   - Restaure le score de référence depuis `mutation-score-baseline.txt` ou l'enregistre
+   - Pour éviter les conflits entre l'exécution des deux versions de Java (24 et 25-ea), on introduit `${{ matrix.java-version }}` dans la clé du cache.
+   - Comme la sauvegarde se fait automatiquement dans la phase "post job", une seule étape suffit pour restaurer et enregistrer la valeur de référence.
 4. `Comparer le score de mutation avec la valeur de référence` : 
-   - Charge le valeur de référence dans la variable `$baseline`, puis la compare avec `$MUTATION_SCORE` : 
+   - Charge lea valeur de référence dans la variable `$baseline`, puis la compare avec `$MUTATION_SCORE` : 
      - Si `MUTATION_SCORE ≥ baseline` : le workflow passe et on met à jour le score de référence dans l'étape suivante.
      - Si `MUTATION_SCORE < baseline`: le workflow échoue avec `exit 1`
 5. `Mettre à jour le score de mutation de référence` : 
